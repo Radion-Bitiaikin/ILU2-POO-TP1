@@ -5,7 +5,7 @@ import personnages.Gaulois;
 
 public class Village {
 	private String nom;
-	private Chef chef;
+	private Chef chef = null;
 	private Gaulois[] villageois;
 	private int nbVillageois = 0;
 	private Marche marche;
@@ -44,7 +44,9 @@ public class Village {
 		return null;
 	}
 
-	public String afficherVillageois() {
+	public String afficherVillageois() throws VillageSansChefException {
+		if (null == chef)
+			throw new VillageSansChefException("village sans chef");
 		StringBuilder chaine = new StringBuilder();
 		if (nbVillageois < 1) {
 			chaine.append("Il n'y a encore aucun habitant au village du chef " + chef.getNom() + ".\n");
@@ -74,6 +76,7 @@ public class Village {
 		Etal e[] = marche.trouverEtals(produit);
 		switch (e.length) {
 		case 0:
+			c.append("Il n'y a pas de vendeur qui propose des " + produit + " au marche.\n");
 			break;
 		case 1:
 			c.append("Seul le vendeur " + e[0].getVendeur().getNom() + " propose des " + produit + " au marché.\n");
@@ -99,7 +102,14 @@ public class Village {
 		return marche.afficherMarche();
 	}
 
-	private class Marche {
+	public class VillageSansChefException extends Exception {
+		public VillageSansChefException(String errorMessage) {
+			super(errorMessage);
+		}
+	}
+
+	// TODO appliquer les bonnes pratiques sur la classe interne
+	class Marche {
 		Etal etals[];
 
 		public Marche(int nbEtals) {
@@ -146,8 +156,9 @@ public class Village {
 		public String afficherMarche() {
 			StringBuilder c = new StringBuilder();
 			int n = 0;
+			c.append("Le marche du village \"" + nom + "\" possede plusieurs etals:\n");
 			for (int i = 0; i < etals.length; i++) {
-				if (null == etals[i]) {
+				if (null == etals[i] || !etals[i].isEtalOccupe()) {
 					n++;
 				} else {
 					c.append(etals[i].afficherEtal());
